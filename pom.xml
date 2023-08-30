@@ -87,7 +87,7 @@
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
-            <version>1.20.1-R0.1-SNAPSHOT</version>
+            <version>1.16.5-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -107,12 +107,6 @@
             <version>8.0.33</version>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>me.rivaldev.harvesterhoes</groupId>
-            <artifactId>RivalHarvesterHoesAPI</artifactId>
-            <version>1.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/RivalHarvesterHoesAPI.jar</systemPath>
-        </dependency>
+
     </dependencies>
 </project>
