@@ -1,5 +1,6 @@
 package net.zerotoil.dev.cyberlevels.objects.levels;
 
+import com.github.puregero.multilib.MultiLib;
 import net.zerotoil.dev.cyberlevels.CyberLevels;
 import net.zerotoil.dev.cyberlevels.objects.MySQL;
 import net.zerotoil.dev.cyberlevels.objects.RewardObject;
@@ -188,6 +189,15 @@ public class LevelCache {
         playerLevels.put(player, playerData);
     }
 
+    public void updatePlayer(Player player) {
+        
+        mySQL.updatePlayer(player);
+        PlayerData playerData;
+        playerData = mySQL.getPlayerData(player);
+        playerLevels.put(player, playerData);
+
+    }
+
     public void savePlayer(Player player, boolean clearData) {
 
         PlayerData playerData = playerLevels.get(player);
@@ -218,7 +228,8 @@ public class LevelCache {
     }
 
     public void saveOnlinePlayers(boolean clearData) {
-        for (Player player : Bukkit.getOnlinePlayers()) savePlayer(player, clearData);
+        for (Player player : MultiLib.getAllOnlinePlayers())
+            savePlayer(player, clearData);
     }
 
     public Long startLevel() {

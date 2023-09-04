@@ -1,5 +1,6 @@
 package net.zerotoil.dev.cyberlevels;
 
+import com.github.puregero.multilib.MultiLib;
 import net.zerotoil.dev.cyberlevels.addons.Metrics;
 import net.zerotoil.dev.cyberlevels.addons.PlaceholderAPI;
 import net.zerotoil.dev.cyberlevels.commands.CLVCommand;
@@ -16,7 +17,12 @@ import net.zerotoil.dev.cyberlevels.utilities.Logger;
 import net.zerotoil.dev.cyberlevels.utilities.PlayerUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
+
+import javax.swing.plaf.multi.MultiMenuItemUI;
+import java.util.UUID;
 
 public final class CyberLevels extends JavaPlugin {
 
@@ -116,8 +122,47 @@ public final class CyberLevels extends JavaPlugin {
                 logger("&8-----------------------------------------------");
             else logger("&d―――――――――――――――――――――――――――――――――――――――――――――――");
         }
-
+        setupMultiLibChannels();
     }
+
+
+    private void setupMultiLibChannels() {
+        MultiLib.onString(this, "c-player-join", (data) -> {
+            Bukkit.getScheduler().runTaskLater(this, new Runnable() {
+                @Override
+                public void run() {
+                    for (Player player : MultiLib.getAllOnlinePlayers()) {
+                        if (player.getUniqueId().toString().equals(data)) {
+                            levelCache().loadPlayer(player);
+                        }
+                    }
+                }
+            }, 40L);
+        });
+        MultiLib.onString(this, "c-player-quit", (data) -> {
+            Bukkit.getScheduler().runTaskLater(this, new Runnable() {
+                @Override
+                public void run() {
+                    for (Player player : MultiLib.getAllOnlinePlayers()) {
+                        if (player.getUniqueId().toString().equals(data)) {
+                            levelCache().savePlayer(player, true);
+                        }
+                    }
+                }
+            }, 40L);
+        });
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                for (Player player : MultiLib.getAllOnlinePlayers()) {
+                    levelCache.updatePlayer(player);
+                }
+                Bukkit.broadcastMessage("updated");
+            }
+        }.runTaskTimer(this, 0, 100);
+    }
+
 
     @Override
     public void onDisable() {
