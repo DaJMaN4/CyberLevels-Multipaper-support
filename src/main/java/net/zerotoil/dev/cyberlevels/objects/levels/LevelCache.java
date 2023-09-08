@@ -189,13 +189,14 @@ public class LevelCache {
         playerLevels.put(player, playerData);
     }
 
-    public void updatePlayer(Player player) {
-        
+    public void updateExternalPlayer(Player player) {
         mySQL.updatePlayer(player);
+    }
+
+    public void updateLocalPlayer(Player player) {
         PlayerData playerData;
         playerData = mySQL.getPlayerData(player);
         playerLevels.put(player, playerData);
-
     }
 
     public void savePlayer(Player player, boolean clearData) {
@@ -245,7 +246,6 @@ public class LevelCache {
     }
 
     public Map<Player, PlayerData> playerLevels() {
-        Bukkit.broadcastMessage("playerLevels: " + playerLevels.size());
         return playerLevels;
     }
 

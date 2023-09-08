@@ -22,6 +22,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import javax.swing.plaf.multi.MultiMenuItemUI;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public final class CyberLevels extends JavaPlugin {
@@ -36,6 +38,8 @@ public final class CyberLevels extends JavaPlugin {
     private LevelCache levelCache;
     private EXPCache expCache;
     private EXPListeners expListeners;
+
+    private final List<Player> externalPlayers = new ArrayList<Player>();
 
     //public MultiPaperCore multicore;
 
@@ -123,6 +127,7 @@ public final class CyberLevels extends JavaPlugin {
             else logger("&d―――――――――――――――――――――――――――――――――――――――――――――――");
         }
         setupMultiLibChannels();
+        updater();
     }
 
 
@@ -134,6 +139,7 @@ public final class CyberLevels extends JavaPlugin {
                     for (Player player : MultiLib.getAllOnlinePlayers()) {
                         if (player.getUniqueId().toString().equals(data)) {
                             levelCache().loadPlayer(player);
+                            externalPlayers.add(player);
                         }
                     }
                 }
@@ -146,19 +152,32 @@ public final class CyberLevels extends JavaPlugin {
                     for (Player player : MultiLib.getAllOnlinePlayers()) {
                         if (player.getUniqueId().toString().equals(data)) {
                             levelCache().savePlayer(player, true);
+                            externalPlayers.remove(player);
                         }
                     }
                 }
             }, 40L);
         });
+        MultiLib.onString(this, "c-player-update", (data) -> {
+            for (Player player : MultiLib.getAllOnlinePlayers()) {
+                if (player.getUniqueId().toString().equals(data)) {
+                    if (levelCache.playerLevels().get(player).getExp() >= Double.parseDouble(data.split(":")[1])) return;
+                    levelCache().updateLocalPlayer(player);
+                    Bukkit.getConsoleSender().sendMessage("updated");
+                }
+            }
+        });
+    }
 
+    public void updater() {
         new BukkitRunnable() {
             @Override
             public void run() {
-                for (Player player : MultiLib.getAllOnlinePlayers()) {
-                    levelCache.updatePlayer(player);
+                for (Player player : externalPlayers) {
+                    levelCache.updateExternalPlayer(player);
+                    MultiLib.notify("c-player-update", player.getUniqueId().toString() + ":" + levelCache.playerLevels().get(player).getExp());
+                    Bukkit.broadcastMessage("updated");
                 }
-                Bukkit.broadcastMessage("updated");
             }
         }.runTaskTimer(this, 0, 100);
     }
