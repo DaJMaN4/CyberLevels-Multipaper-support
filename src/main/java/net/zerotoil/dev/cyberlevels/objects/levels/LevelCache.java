@@ -245,6 +245,7 @@ public class LevelCache {
     }
 
     public Map<Player, PlayerData> playerLevels() {
+        Bukkit.broadcastMessage("playerLevels: " + playerLevels.size());
         return playerLevels;
     }
 

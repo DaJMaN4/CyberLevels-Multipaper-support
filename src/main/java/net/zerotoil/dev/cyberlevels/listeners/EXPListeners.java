@@ -114,6 +114,7 @@ public class EXPListeners implements Listener {
     // Works 1.7.10 - latest
     @EventHandler (priority = EventPriority.HIGHEST)
     private void onBreaking(BlockBreakEvent event) {
+        Bukkit.getConsoleSender().sendMessage("onBreaking EXPListener ran");
         if (event.isCancelled()) return;
 
         final int version = main.serverVersion();
@@ -301,7 +302,7 @@ public class EXPListeners implements Listener {
     } */
 
     public void sendExp(Player player, EXPEarnEvent expEarnEvent, String item) {
-
+        Bukkit.getConsoleSender().sendMessage("sendExp ExpListeners ran");
         if (checkAbuse(player, expEarnEvent)) return;
 
         double counter = 0;
@@ -311,6 +312,8 @@ public class EXPListeners implements Listener {
 
         if (expEarnEvent.isSpecificEnabled() && expEarnEvent.isInSpecificList(item))
             counter += expEarnEvent.getSpecificExp(item);
+
+        Bukkit.broadcastMessage("worked the staff is like a stick");
 
         if (counter > 0) main.levelCache().playerLevels().get(player).addExp(counter, main.levelCache().doEventMultiplier());
         else if (counter < 0) main.levelCache().playerLevels().get(player).removeExp(Math.abs(counter));
