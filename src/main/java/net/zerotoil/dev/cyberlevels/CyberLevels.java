@@ -163,7 +163,6 @@ public final class CyberLevels extends JavaPlugin {
                 if (player.getUniqueId().toString().equals(data)) {
                     if (levelCache.playerLevels().get(player).getExp() >= Double.parseDouble(data.split(":")[1])) return;
                     levelCache().updateLocalPlayer(player);
-                    Bukkit.getConsoleSender().sendMessage("updated");
                 }
             }
         });
@@ -176,7 +175,6 @@ public final class CyberLevels extends JavaPlugin {
                 for (Player player : externalPlayers) {
                     levelCache.updateExternalPlayer(player);
                     MultiLib.notify("c-player-update", player.getUniqueId().toString() + ":" + levelCache.playerLevels().get(player).getExp());
-                    Bukkit.broadcastMessage("updated");
                 }
             }
         }.runTaskTimer(this, 0, 100);

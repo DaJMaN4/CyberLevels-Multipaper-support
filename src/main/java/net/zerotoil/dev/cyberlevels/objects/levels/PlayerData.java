@@ -73,12 +73,10 @@ public class PlayerData {
     }
 
     public void addExp(double amount, boolean doMultiplier) {
-        Bukkit.broadcastMessage("addExp 1");
         addExp(amount, 0, true, doMultiplier);
     }
 
     public void addExp(double amount, double difference, boolean sendMessage, boolean doMultiplier) {
-        Bukkit.broadcastMessage("addExp 2");
         amount = Math.max(amount, 0);
 
         // does player have a multiplier permission?
@@ -97,7 +95,6 @@ public class PlayerData {
             levelCounter++;
             sendLevelReward();
         }
-        Bukkit.broadcastMessage("addExp 3");
         exp += amount;
 
         double displayTotal = amount;
@@ -118,7 +115,6 @@ public class PlayerData {
         lastAmount = displayTotal;
         lastTime = System.currentTimeMillis();
         if (sendMessage) checkLeaderboard();
-        Bukkit.broadcastMessage("addExp 4" + exp.toString());
     }
 
     public void setExp(double amount, boolean checkLevel, boolean sendMessage) {
