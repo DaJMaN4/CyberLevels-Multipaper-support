@@ -39,7 +39,7 @@ public final class CyberLevels extends JavaPlugin {
     private EXPCache expCache;
     private EXPListeners expListeners;
 
-    private final List<Player> externalPlayers = new ArrayList<Player>();
+    private List<Player> externalPlayers;
 
     //public MultiPaperCore multicore;
 
@@ -140,6 +140,7 @@ public final class CyberLevels extends JavaPlugin {
                         if (player.getUniqueId().toString().equals(data)) {
                             levelCache().loadPlayer(player);
                             externalPlayers.add(player);
+
                         }
                     }
                 }
@@ -149,7 +150,7 @@ public final class CyberLevels extends JavaPlugin {
             Bukkit.getScheduler().runTaskLater(this, new Runnable() {
                 @Override
                 public void run() {
-                    for (Player player : MultiLib.getAllOnlinePlayers()) {
+                    for (Player player : externalPlayers) {
                         if (player.getUniqueId().toString().equals(data)) {
                             levelCache().savePlayer(player, true);
                             externalPlayers.remove(player);
@@ -159,13 +160,17 @@ public final class CyberLevels extends JavaPlugin {
             }, 40L);
         });
         MultiLib.onString(this, "c-player-update", (data) -> {
+            Double exp = Double.parseDouble(data.split(":")[1]);
+            String uuid = data.split(":")[0];
             for (Player player : MultiLib.getAllOnlinePlayers()) {
-                if (player.getUniqueId().toString().equals(data)) {
-                    if (levelCache.playerLevels().get(player).getExp() >= Double.parseDouble(data.split(":")[1])) return;
+                if (player.getUniqueId().toString().equals(uuid)) {
+                    if (levelCache.playerLevels().get(player).getExp() >= exp) return;
                     levelCache().updateLocalPlayer(player);
+                    Bukkit.getConsoleSender().sendMessage("player updated");
                 }
             }
         });
+
     }
 
     public void updater() {
@@ -175,6 +180,7 @@ public final class CyberLevels extends JavaPlugin {
                 for (Player player : externalPlayers) {
                     levelCache.updateExternalPlayer(player);
                     MultiLib.notify("c-player-update", player.getUniqueId().toString() + ":" + levelCache.playerLevels().get(player).getExp());
+                    Bukkit.getConsoleSender().sendMessage("player updated");
                 }
             }
         }.runTaskTimer(this, 0, 100);

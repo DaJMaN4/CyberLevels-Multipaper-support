@@ -114,7 +114,6 @@ public class EXPListeners implements Listener {
     // Works 1.7.10 - latest
     @EventHandler (priority = EventPriority.HIGHEST)
     private void onBreaking(BlockBreakEvent event) {
-        Bukkit.getConsoleSender().sendMessage("onBreaking EXPListener ran");
         if (event.isCancelled()) return;
 
         final int version = main.serverVersion();
@@ -302,7 +301,6 @@ public class EXPListeners implements Listener {
     } */
 
     public void sendExp(Player player, EXPEarnEvent expEarnEvent, String item) {
-        Bukkit.getConsoleSender().sendMessage("sendExp ExpListeners ran");
         if (checkAbuse(player, expEarnEvent)) return;
 
         double counter = 0;
