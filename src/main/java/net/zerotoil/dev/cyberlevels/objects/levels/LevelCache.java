@@ -166,11 +166,9 @@ public class LevelCache {
         PlayerData playerData;
         playerData = mySQL.getPlayerData(player);
         playerLevels.put(player, playerData);
-        Bukkit.getConsoleSender().sendMessage("player loaded levelCache" + playerLevels);
     }
 
     public void loadExternalPlayer(UUID data) {
-        Bukkit.getConsoleSender().sendMessage("loading player");
         watchdog++;
         if (watchdog > 5) {
             watchdog = 0;
@@ -183,16 +181,13 @@ public class LevelCache {
             public void run() {
                 for (Player player : MultiLib.getAllOnlinePlayers()) {
                     if (player.getUniqueId().equals(data)) {
-                        Bukkit.getConsoleSender().sendMessage("player found");
                         main.levelCache().loadPlayer(player);
                         loadPlayer(player);
                         if (playerLevels.get(player) != null) {
-                            Bukkit.getConsoleSender().sendMessage("player found!!!!!!!!!!!!!!!!!!!!!!");
                             return;
                         }
                     }
                 }
-                Bukkit.getConsoleSender().sendMessage("player not found");
                 loadExternalPlayer(data);
             }
         }, 20L);
