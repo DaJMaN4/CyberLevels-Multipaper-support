@@ -3,6 +3,7 @@ package net.zerotoil.dev.cyberlevels.objects;
 import net.zerotoil.dev.cyberlevels.CyberLevels;
 import net.zerotoil.dev.cyberlevels.objects.leaderboard.LeaderboardPlayer;
 import net.zerotoil.dev.cyberlevels.objects.levels.PlayerData;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.sql.*;
@@ -170,14 +171,23 @@ public class MySQL {
         if (!playerInTable(player)) addPlayer(player, true);
 
         try {
+            Bukkit.getConsoleSender().sendMessage("getting player data 1");
             PlayerData playerData = new PlayerData(main, player);
+            Bukkit.getConsoleSender().sendMessage("getting player data 2");
             PreparedStatement statement = connection.prepareStatement("SELECT * FROM " + table + " WHERE UUID=?");
+            Bukkit.getConsoleSender().sendMessage("getting player data 3");
             statement.setString(1, player.getUniqueId().toString());
+            Bukkit.getConsoleSender().sendMessage("getting player data 4");
             ResultSet results = statement.executeQuery();
+            Bukkit.getConsoleSender().sendMessage("getting player data 5");
             results.next();
+            Bukkit.getConsoleSender().sendMessage("getting player data 6");
             playerData.setLevel(results.getLong("LEVEL"), false);
-            playerData.setExp(results.getDouble("EXP"), false, false, false);
+            Bukkit.getConsoleSender().sendMessage("getting player data 7");
+            playerData.setExpMysqls(results.getDouble("EXP"), false, false, false);
+            Bukkit.getConsoleSender().sendMessage("getting player data 8");
             Long maxLevel = results.getLong("MAX_LEVEL");
+            Bukkit.getConsoleSender().sendMessage("getting player data 9");
             if (!(maxLevel + "").equalsIgnoreCase("null")) playerData.setMaxLevel(maxLevel);
             return playerData;
 

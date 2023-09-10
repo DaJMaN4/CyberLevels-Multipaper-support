@@ -6,6 +6,7 @@ import net.zerotoil.dev.cyberlevels.objects.MySQL;
 import net.zerotoil.dev.cyberlevels.objects.RewardObject;
 import net.zerotoil.dev.cyberlevels.objects.leaderboard.Leaderboard;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -46,6 +47,8 @@ public class LevelCache {
 
     private final boolean messageAutoSave;
     private final boolean messageConsole;
+
+    private Integer watchdog = 0;
 
     private MySQL mySQL;
 
@@ -161,32 +164,38 @@ public class LevelCache {
 
     public void loadPlayer(Player player) {
         PlayerData playerData;
-        String uuid = player.getUniqueId().toString();
-
-        if (mySQL == null) {
-            playerData = new PlayerData(main, player);
-            File playerFile = new File(main.getDataFolder() + File.separator + "player_data", uuid + ".clv");
-            try {
-                if (!playerFile.exists()) {
-                    playerFile.createNewFile();
-                    String content = playerData.getLevel() + "\n" + main.levelUtils().roundStringDecimal(playerData.getExp()) + "\n" + playerData.getMaxLevel();
-                    BufferedWriter writer = Files.newBufferedWriter(Paths.get(main.getDataFolder().getAbsolutePath() + File.separator + "player_data" + File.separator + uuid + ".clv"));
-                    writer.write(content);
-                    writer.close();
-                } else {
-                    Scanner scanner = new Scanner(playerFile);
-                    playerData.setLevel(Long.parseLong(scanner.nextLine()), false);
-                    playerData.setExp(Double.parseDouble(scanner.nextLine()), false, false);
-                    if (scanner.hasNext()) playerData.setMaxLevel(Long.parseLong(scanner.nextLine()));
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                main.logger("&cFailed to make file for " + player.getName() + ".");
-            }
-        }
-        else playerData = mySQL.getPlayerData(player);
+        playerData = mySQL.getPlayerData(player);
         playerLevels.put(player, playerData);
+        Bukkit.getConsoleSender().sendMessage("player loaded levelCache" + playerLevels);
+    }
+
+    public void loadExternalPlayer(UUID data) {
+        Bukkit.getConsoleSender().sendMessage("loading player");
+        watchdog++;
+        if (watchdog > 5) {
+            watchdog = 0;
+            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "Player with UUID " + data.toString() + " could not be found." +
+                    "Check your connection to external servers.");
+            return;
+        }
+        Bukkit.getScheduler().runTaskLater(main, new Runnable() {
+            @Override
+            public void run() {
+                for (Player player : MultiLib.getAllOnlinePlayers()) {
+                    if (player.getUniqueId().equals(data)) {
+                        Bukkit.getConsoleSender().sendMessage("player found");
+                        main.levelCache().loadPlayer(player);
+                        loadPlayer(player);
+                        if (playerLevels.get(player) != null) {
+                            Bukkit.getConsoleSender().sendMessage("player found!!!!!!!!!!!!!!!!!!!!!!");
+                            return;
+                        }
+                    }
+                }
+                Bukkit.getConsoleSender().sendMessage("player not found");
+                loadExternalPlayer(data);
+            }
+        }, 20L);
     }
 
     public void updateExternalPlayer(Player player) {
@@ -218,10 +227,10 @@ public class LevelCache {
     }
 
     public void loadOnlinePlayers() {
-        if (Bukkit.getOnlinePlayers().isEmpty()) return;
+        if (MultiLib.getAllOnlinePlayers().isEmpty()) return;
         main.logger("&dLoading data for online players...");
         long startTime = System.currentTimeMillis(), counter = 0;
-        for (Player player : Bukkit.getOnlinePlayers()) {
+        for (Player player : MultiLib.getAllOnlinePlayers()) {
             loadPlayer(player);
             counter++;
         }

@@ -17,6 +17,7 @@ import net.zerotoil.dev.cyberlevels.utilities.Logger;
 import net.zerotoil.dev.cyberlevels.utilities.PlayerUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -38,10 +39,6 @@ public final class CyberLevels extends JavaPlugin {
     private LevelCache levelCache;
     private EXPCache expCache;
     private EXPListeners expListeners;
-
-    private List<Player> externalPlayers;
-
-    //public MultiPaperCore multicore;
 
     @Override
     public void onEnable() {
@@ -127,37 +124,19 @@ public final class CyberLevels extends JavaPlugin {
             else logger("&d―――――――――――――――――――――――――――――――――――――――――――――――");
         }
         setupMultiLibChannels();
-        updater();
     }
 
 
     private void setupMultiLibChannels() {
         MultiLib.onString(this, "c-player-join", (data) -> {
-            Bukkit.getScheduler().runTaskLater(this, new Runnable() {
-                @Override
-                public void run() {
-                    for (Player player : MultiLib.getAllOnlinePlayers()) {
-                        if (player.getUniqueId().toString().equals(data)) {
-                            levelCache().loadPlayer(player);
-                            externalPlayers.add(player);
-
-                        }
-                    }
-                }
-            }, 40L);
+            levelCache.loadExternalPlayer(UUID.fromString(data));
         });
         MultiLib.onString(this, "c-player-quit", (data) -> {
-            Bukkit.getScheduler().runTaskLater(this, new Runnable() {
-                @Override
-                public void run() {
-                    for (Player player : externalPlayers) {
-                        if (player.getUniqueId().toString().equals(data)) {
-                            levelCache().savePlayer(player, true);
-                            externalPlayers.remove(player);
-                        }
-                    }
+            for (Player player : MultiLib.getAllOnlinePlayers()) {
+                if (player.getUniqueId().toString().equals(data)) {
+                    levelCache().savePlayer(player, true);
                 }
-            }, 40L);
+            }
         });
         MultiLib.onString(this, "c-player-update", (data) -> {
             Double exp = Double.parseDouble(data.split(":")[1]);
@@ -170,25 +149,21 @@ public final class CyberLevels extends JavaPlugin {
                 }
             }
         });
-
     }
 
-    public void updater() {
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                for (Player player : externalPlayers) {
-                    levelCache.updateExternalPlayer(player);
-                    MultiLib.notify("c-player-update", player.getUniqueId().toString() + ":" + levelCache.playerLevels().get(player).getExp());
-                    Bukkit.getConsoleSender().sendMessage("player updated");
-                }
-            }
-        }.runTaskTimer(this, 0, 100);
+    public void updater(Player player) {
+        if (MultiLib.isLocalPlayer(player)) return;
+        levelCache.updateExternalPlayer(player);
+        MultiLib.notify("c-player-update", player.getUniqueId().toString() + ":" + levelCache.playerLevels().get(player).getExp());
+        Bukkit.getConsoleSender().sendMessage("player updated");
     }
 
 
     @Override
     public void onDisable() {
+        // for (Player player : externalPlayers) {
+      //      levelCache.savePlayer(player, true);
+      //  }
         levelCache.saveOnlinePlayers(true);
         levelCache.clearLevelData();
         levelCache.cancelAutoSave();

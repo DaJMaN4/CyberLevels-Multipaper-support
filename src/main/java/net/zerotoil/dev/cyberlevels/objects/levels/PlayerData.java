@@ -44,6 +44,7 @@ public class PlayerData {
         if (levelCounter > 0)
             main.langUtils().sendMessage(player, player,"gained-levels", true, true, new String[]{"{gainedLevels}"}, new String[]{levelCounter + ""});
         checkLeaderboard();
+        playerUpdate();
     }
 
     public void setLevel(long amount, boolean sendMessage) {
@@ -61,6 +62,7 @@ public class PlayerData {
         if (levelCounter > 0) main.langUtils().sendMessage(player, player,"lost-levels", true, true, new String[]{"{lostLevels}"}, new String[]{Math.abs(levelCounter) + ""});
         else if (levelCounter < 0) main.langUtils().sendMessage(player, player,"gained-levels", true, true, new String[]{"{gainedLevels}"}, new String[]{Math.abs(levelCounter) + ""});
         checkLeaderboard();
+        playerUpdate();
     }
 
     public void removeLevel(long amount) {
@@ -71,6 +73,7 @@ public class PlayerData {
         if (levelCounter > 0)
             main.langUtils().sendMessage(player, player,"lost-levels", true, true, new String[]{"{lostLevels}"}, new String[]{levelCounter + ""});
         checkLeaderboard();
+        playerUpdate();
     }
 
     public void addExp(double amount, boolean doMultiplier) {
@@ -120,6 +123,7 @@ public class PlayerData {
         lastTime = System.currentTimeMillis();
         if (sendMessage) checkLeaderboard();
         Bukkit.broadcastMessage("addExp 4" + exp.toString());
+        playerUpdate();
     }
 
     public void setExp(double amount, boolean checkLevel, boolean sendMessage) {
@@ -127,6 +131,21 @@ public class PlayerData {
     }
 
     public void setExp(double amount, boolean checkLevel, boolean sendMessage, boolean checkLeaderboard) {
+        amount = Math.abs(amount);
+        if (checkLevel) {
+            double exp = this.exp;
+            this.exp = 0.0;
+            addExp(amount, exp, sendMessage, false);
+        } else exp = amount;
+        if (checkLeaderboard) checkLeaderboard();
+        playerUpdate();
+    }
+
+    public void setExpMysqls(double amount, boolean checkLevel, boolean sendMessage) {
+        setExp(amount, checkLevel, sendMessage, true);
+    }
+
+    public void setExpMysqls(double amount, boolean checkLevel, boolean sendMessage, boolean checkLeaderboard) {
         amount = Math.abs(amount);
         if (checkLevel) {
             double exp = this.exp;
@@ -187,6 +206,7 @@ public class PlayerData {
         level = Math.max(main.levelCache().startLevel(), level);
         exp = Math.max(0, exp);
         checkLeaderboard();
+        playerUpdate();
     }
 
     @Override
@@ -250,7 +270,9 @@ public class PlayerData {
         });
     }
 
-
+    private void playerUpdate() {
+        main.updater(player);
+    }
 
     public void setMaxLevel(Long maxLevel) {
         this.maxLevel = maxLevel;
