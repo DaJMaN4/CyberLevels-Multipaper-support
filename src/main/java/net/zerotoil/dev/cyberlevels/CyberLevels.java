@@ -124,8 +124,15 @@ public final class CyberLevels extends JavaPlugin {
             else logger("&d―――――――――――――――――――――――――――――――――――――――――――――――");
         }
         setupMultiLibChannels();
+        getAllPlayers();
     }
 
+    private void getAllPlayers() {
+        for (Player player : MultiLib.getAllOnlinePlayers()) {
+            if (MultiLib.isLocalPlayer(player)) continue;
+            levelCache.loadExternalPlayer(player.getUniqueId());
+        }
+    }
 
     private void setupMultiLibChannels() {
         MultiLib.onString(this, "c-player-join", (data) -> {
